@@ -28,7 +28,11 @@ def plot_feature_importance_matplotlib(features, importances):
     return fig
 
 # Page config
-st.set_page_config(page_title="AI-Powered Data Analyzer", layout="wide")
+st.set_page_config(
+    page_title="AI-Powered Data Analyzer",
+    page_icon="🔍",  # You can use an emoji
+    layout="wide"
+)
 
 st.title("🔍 Big Data Analysis with AI and ML")
 
