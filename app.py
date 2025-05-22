@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import altair as alt
+import altair as alt  # ✅ Added for Altair charts
+
 from utils import (
     load_data, preprocess_data, visualize_data,
     train_model, evaluate_model, available_models
@@ -12,7 +13,7 @@ from ai_assistant import generate_insights  # Optional
 # Page config
 st.set_page_config(
     page_title="AI-Powered Data Analyzer",
-    page_icon="icon.png",  # Replace with your favicon file path
+    page_icon="icon.png",  # Replace with your own favicon path if desired
     layout="wide"
 )
 
@@ -68,10 +69,11 @@ if uploaded_file:
                             "Importance": importance
                         })
 
-                        # Altair colorful chart
+                        importance_df["Feature"] = importance_df["Feature"].astype(str)
+
                         chart = alt.Chart(importance_df).mark_bar().encode(
-                            x=alt.X('Feature:N', sort='-y'),
-                            y=alt.Y('Importance:Q'),
+                            x=alt.X('Feature:N', sort='-y', title='Features'),
+                            y=alt.Y('Importance:Q', title='Importance'),
                             color=alt.Color('Feature:N', scale=alt.Scale(scheme='category20b')),
                             tooltip=['Feature', 'Importance']
                         ).properties(
@@ -98,6 +100,9 @@ if uploaded_file:
 
 else:
     st.info("Please upload a CSV or Excel file to get started.")
+
+
+
 
 
 
