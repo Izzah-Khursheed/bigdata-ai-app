@@ -8,6 +8,25 @@ from utils import (
 )
 from ai_assistant import generate_insights  # Optional
 
+# --- Helper for plotting feature importance with multi colors ---
+def plot_feature_importance_matplotlib(features, importances):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    cmap = plt.cm.get_cmap('tab20')  # up to 20 distinct colors
+
+    # Cycle colors if features > 20
+    colors = [cmap(i % 20) for i in range(len(features))]
+
+    bars = ax.bar(features, importances, color=colors)
+    ax.set_xlabel("Features")
+    ax.set_ylabel("Importance")
+    ax.set_title("Feature Importance with Different Colors")
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+
+    # Close figure after use to avoid Streamlit caching issues
+    plt.close(fig)
+    return fig
+
 # Page config
 st.set_page_config(page_title="AI-Powered Data Analyzer", layout="wide")
 
@@ -16,22 +35,6 @@ st.title("🔍 Big Data Analysis with AI and ML")
 # --- Sidebar for file upload ---
 st.sidebar.header("📁 Upload Your Dataset")
 uploaded_file = st.sidebar.file_uploader("Upload CSV or Excel file", type=["csv", "xlsx"])
-
-def plot_feature_importance(features, importance):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    colors = plt.cm.tab20.colors  # up to 20 distinct colors
-    n = len(features)
-    # Repeat colors if features > 20
-    color_list = list(colors) * (n // len(colors) + 1)
-    color_list = color_list[:n]
-
-    ax.bar(features, importance, color=color_list)
-    ax.set_xlabel("Features")
-    ax.set_ylabel("Importance")
-    ax.set_title("Feature Importance with Different Colors")
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-    st.pyplot(fig)
 
 if uploaded_file:
     # --- Section: Raw Data ---
@@ -73,7 +76,10 @@ if uploaded_file:
                         st.subheader("🔍 Feature Importance")
                         importance = model.feature_importances_
                         features = X_test.columns
-                        plot_feature_importance(features, importance)
+
+                        # Use the helper function to get the figure with colored bars
+                        fig = plot_feature_importance_matplotlib(features, importance)
+                        st.pyplot(fig)
 
                 except Exception as e:
                     st.error(f"❌ Error during training or evaluation: {e}")
@@ -91,10 +97,6 @@ if uploaded_file:
 
 else:
     st.info("Please upload a CSV or Excel file to get started.")
-
-
-
-
 
 
 
