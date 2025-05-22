@@ -1,0 +1,8 @@
+[server]
+headless = true
+enableCORS = false
+port = 8501
+
+[browser]
+gatherUsageStats = false
+GEMINI_API_KEY = "AIzaSyAtWmu6_u3-W8SaTBFDGDzZ2mFlmKKttbU"
