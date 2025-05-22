@@ -25,10 +25,14 @@ uploaded_file = st.sidebar.file_uploader("Upload CSV or Excel file", type=["csv"
 
 if uploaded_file:
     # --- Section: Raw Data ---
-    with st.expander("📊 Raw Data (Click to Expand)", expanded=True):
-        df = load_data(uploaded_file)
+    st.markdown('<h4 style="font-size:28px;">📊 Raw Data</h4>', unsafe_allow_html=True)
+    with st.expander("Click to Expand", expanded=True):
+        st.dataframe(df.head())
         st.dataframe(df.head())
 
+    # with st.expander("📊 Raw Data (Click to Expand)", expanded=True):
+    #     df = load_data(uploaded_file)
+        
     # --- Section: Cleaned Data ---
     with st.expander("🧹 Cleaned Data (Click to Expand)"):
         df = preprocess_data(df)
