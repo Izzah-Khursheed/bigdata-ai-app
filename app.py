@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import plotly.express as px
+
 from utils import (
     load_data, preprocess_data, visualize_data,
     train_model, evaluate_model, available_models
@@ -54,8 +56,22 @@ if uploaded_file:
 
                 if show_feat_importance and hasattr(model, "feature_importances_"):
                     st.subheader("🔍 Feature Importance")
+
                     importance = model.feature_importances_
-                    st.bar_chart(pd.Series(importance, index=X_test.columns))
+                    feat_imp_df = pd.DataFrame({
+                        'Feature': X_test.columns,
+                        'Importance': importance
+                    })
+
+                    fig = px.bar(
+                        feat_imp_df,
+                        x='Feature',
+                        y='Importance',
+                        color='Feature',  # Different color for each bar
+                        color_discrete_sequence=px.colors.qualitative.Set3
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
             except Exception as e:
                 st.error(f"❌ Error during training or evaluation: {e}")
 
