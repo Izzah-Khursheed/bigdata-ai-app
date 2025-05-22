@@ -24,14 +24,9 @@ st.sidebar.header("📁 Upload Your Dataset")
 uploaded_file = st.sidebar.file_uploader("Upload CSV or Excel file", type=["csv", "xlsx"])
 
 if uploaded_file:
-    # --- Section: Raw Data ---
-    st.markdown('<h4 style="font-size:28px;">📊 Raw Data</h4>', unsafe_allow_html=True)
-    with st.expander("Click to Expand", expanded=True):
+    with st.expander("📊 Raw Data (Click to Expand)", expanded=True):
         df = load_data(uploaded_file)
         st.dataframe(df.head())
-
-    # with st.expander("📊 Raw Data (Click to Expand)", expanded=True):
-    #     
         
     # --- Section: Cleaned Data ---
     with st.expander("🧹 Cleaned Data (Click to Expand)"):
