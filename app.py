@@ -11,7 +11,7 @@ from ai_assistant import generate_insights  # Optional
 # Page config
 st.set_page_config(
     page_title="AI-Powered Data Analyzer",
-    page_icon="🔍",  # You can use an emoji
+    page_icon="icon.png",  # You can use an emoji
     layout="wide"
 )
 
