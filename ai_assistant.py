@@ -1,14 +1,11 @@
-import os
+import streamlit as st
 import requests
 
-# Get API key from environment variable (GitHub Secrets or local env)
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# ✅ Access Groq API key from Streamlit secrets
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 
 def generate_insights(summary):
     try:
-        if not GROQ_API_KEY:
-            return "❌ GROQ_API_KEY not found. Please check your environment setup."
-
         url = "https://api.groq.com/openai/v1/chat/completions"
         headers = {
             "Authorization": f"Bearer {GROQ_API_KEY}",
@@ -27,8 +24,7 @@ def generate_insights(summary):
         response = requests.post(url, headers=headers, json=payload)
         result = response.json()
 
-        # Debug print
-        print("Groq API response:", result)
+        # Debugging (optional): st.write(result)
 
         if "choices" in result:
             return result["choices"][0]["message"]["content"]
