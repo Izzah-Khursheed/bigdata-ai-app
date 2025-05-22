@@ -1,10 +1,9 @@
-import os
+# ai_assistant.py
+
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# 🔐 Directly use your Groq API key (replace with your real one)
+GROQ_API_KEY = "your_actual_groq_api_key_here"
 
 def generate_insights(summary):
     try:
@@ -15,15 +14,15 @@ def generate_insights(summary):
         }
 
         payload = {
-            "model": "mixtral-8x7b-32768",  # or "llama3-70b-8192", etc.
+            "model": "mixtral-8x7b-32768",  # Or use "llama3-70b-8192", "gemma-7b-it", etc.
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a data analyst that gives smart insights from statistics."
+                    "content": "You are a data analyst. Generate smart, helpful, and concise insights from a dataset summary."
                 },
                 {
                     "role": "user",
-                    "content": f"Here is a dataset summary:\n{summary}\nGive me smart insights in 5 bullet points."
+                    "content": f"Here is a dataset summary:\n{summary}\nPlease provide 5 smart insights."
                 }
             ],
             "temperature": 0.7
