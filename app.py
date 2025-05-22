@@ -56,20 +56,47 @@ if uploaded_file:
                     if show_feat_importance and hasattr(model, "feature_importances_"):
                         st.subheader("🔍 Feature Importance")
 
-                        # Plot feature importance with different colors using matplotlib
                         importance = model.feature_importances_
                         features = X_test.columns
 
                         fig, ax = plt.subplots(figsize=(10, 6))
-                        colors = plt.cm.tab20.colors  # up to 20 distinct colors
+                        colors = plt.cm.tab20.colors  # Tuple of 20 colors
 
-                        bars = ax.bar(features, importance, color=colors[:len(features)])
+                        # Make sure colors list length matches the bars count (repeat if less)
+                        n_bars = len(features)
+                        if n_bars > len(colors):
+                            # Repeat colors if there are more features than 20
+                            color_list = list(colors) * (n_bars // len(colors) + 1)
+                            color_list = color_list[:n_bars]
+                        else:
+                            color_list = colors[:n_bars]
+
+                        bars = ax.bar(features, importance, color=color_list)
                         ax.set_xlabel("Features")
                         ax.set_ylabel("Importance")
                         ax.set_title("Feature Importance with Different Colors")
                         plt.xticks(rotation=45, ha='right')
 
                         st.pyplot(fig)
+
+
+                    # if show_feat_importance and hasattr(model, "feature_importances_"):
+                    #     st.subheader("🔍 Feature Importance")
+
+                    #     # Plot feature importance with different colors using matplotlib
+                    #     importance = model.feature_importances_
+                    #     features = X_test.columns
+
+                    #     fig, ax = plt.subplots(figsize=(10, 6))
+                    #     colors = plt.cm.tab20.colors  # up to 20 distinct colors
+
+                    #     bars = ax.bar(features, importance, color=colors[:len(features)])
+                    #     ax.set_xlabel("Features")
+                    #     ax.set_ylabel("Importance")
+                    #     ax.set_title("Feature Importance with Different Colors")
+                    #     plt.xticks(rotation=45, ha='right')
+
+                    #     st.pyplot(fig)
 
                 except Exception as e:
                     st.error(f"❌ Error during training or evaluation: {e}")
