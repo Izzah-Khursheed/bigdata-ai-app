@@ -13,7 +13,7 @@ def generate_insights(summary):
         }
 
         payload = {
-            "model": "mixtral-8x7b-32768",
+            "model": "llama-3.3-70b-versatile",
             "messages": [
                 {"role": "system", "content": "You're a data analyst."},
                 {"role": "user", "content": f"Here is a dataset summary:\n{summary}\nGive 5 smart insights."}
