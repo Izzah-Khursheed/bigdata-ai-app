@@ -50,7 +50,7 @@ if uploaded_file:
         with st.spinner("Training your model..."):
             try:
                 model, X_test, y_test, y_pred = train_model(df, target, model_name, use_cv)
-                evaluate_model(y_test, y_pred)
+                evaluate_model(model, y_test, y_pred)
 
                 if show_feat_importance and hasattr(model, "feature_importances_"):
                     st.subheader("🔍 Feature Importance")
