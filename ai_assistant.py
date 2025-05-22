@@ -1,20 +1,20 @@
-import google.generativeai as genai
+import requests
 import os
-import streamlit as st
 
-# ✅ Load API key securely from environment variable
-api_key = os.getenv("GEMINI_API_KEY")
+def generate_insights(summary):
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "mixtral-8x7b-32768",  # or llama3-70b
+        "messages": [
+            {"role": "system", "content": "You're a data analyst. Provide insights from data summaries."},
+            {"role": "user", "content": summary}
+        ],
+        "temperature": 0.5
+    }
 
-if api_key:
-    genai.configure(api_key=api_key)
-else:
-    st.warning("⚠️ GEMINI_API_KEY is not set in environment variables.")
-
-# ✅ Function to get AI-generated insight
-def generate_insights(prompt):
-    try:
-        model = genai.GenerativeModel("gemini-2.0-flash-lite")
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        return f"❌ Error generating insight: {str(e)}"
+    response = requests.post(url, json=payload, headers=headers, timeout=15)
+    return response.json()['choices'][0]['message']['content']
