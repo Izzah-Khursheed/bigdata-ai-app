@@ -16,8 +16,6 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 
 from sklearn.preprocessing import LabelEncoder
 
-from mlxtend.frequent_patterns import apriori, association_rules
-
 # ✅ Available models
 available_models = {
     "Logistic Regression": LogisticRegression,
@@ -28,7 +26,7 @@ available_models = {
     "Naive Bayes": GaussianNB,
     "Decision Tree": DecisionTreeClassifier,
     "Gradient Boosting": GradientBoostingClassifier,
-    # KMeans and Apriori are handled differently, see below
+    # KMeans is handled differently
 }
 
 # ✅ Load CSV/Excel with error handling
@@ -45,8 +43,6 @@ def load_data(file):
 # ✅ Basic preprocessing: drop NA and encode categorical
 def preprocess_data(df):
     df = df.dropna()
-
-    # Encode categorical features
     for col in df.select_dtypes(include='object').columns:
         le = LabelEncoder()
         df[col] = le.fit_transform(df[col])
@@ -55,7 +51,7 @@ def preprocess_data(df):
 # ✅ Visualizations
 def visualize_data(df):
     num_df = df.select_dtypes(include='number')
-    
+
     # Pairplot with Matplotlib
     fig = sns.pairplot(num_df)
     st.pyplot(fig)
@@ -68,21 +64,10 @@ def visualize_data(df):
 # ================== Train model ==================
 def train_model(df, target_col, model_name, use_cv=False):
     if model_name == "K-Means Clustering":
-        # Clustering: no train-test split
         X = df.drop(target_col, axis=1) if target_col in df.columns else df
         kmeans = KMeans(n_clusters=3, random_state=42)
         kmeans.fit(X)
         return kmeans, X, None, kmeans.labels_
-
-    elif model_name == "Apriori Algorithm":
-        # Apriori: unsupervised association rules mining
-        # Preprocess: Convert df to one-hot encoded for apriori
-        # Assumes data is transactional with categorical columns
-        df_onehot = pd.get_dummies(df)
-        frequent_itemsets = apriori(df_onehot, min_support=0.1, use_colnames=True)
-        rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.7)
-        return frequent_itemsets, rules, None, None
-
     else:
         X = df.drop(target_col, axis=1)
         y = df[target_col]
@@ -100,7 +85,6 @@ def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
 
     if model_name == "K-Means Clustering":
         st.write("K-Means clustering does not have a 'true label' evaluation in this setup.")
-        # Visualize clusters for 2D or 3D
         if X_test is not None and X_test.shape[1] >= 2:
             plt.figure(figsize=(8,6))
             plt.scatter(X_test.iloc[:, 0], X_test.iloc[:, 1], c=y_pred, cmap='viridis')
@@ -110,15 +94,6 @@ def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
             st.pyplot(plt)
         return
 
-    if model_name == "Apriori Algorithm":
-        frequent_itemsets, rules = model, y_true  # Passed as model, y_true in train_model
-        st.write("### Frequent Itemsets:")
-        st.dataframe(frequent_itemsets)
-        st.write("### Association Rules:")
-        st.dataframe(rules)
-        return
-
-    # Regression evaluation
     if is_regression_model(model):
         mse = mean_squared_error(y_true, y_pred)
         r2 = r2_score(y_true, y_pred)
@@ -131,7 +106,7 @@ def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
         st.write(f"**Accuracy:** {acc:.2f}")
         st.write("**Confusion Matrix:**")
         st.write(cm)
-        st.text("Classification Report:\n" + report)
+        st.text("**Classification Report:**\n" + report)
 
 # ================== Feature importance ==================
 def show_feature_importance(model, X_test):
@@ -151,6 +126,7 @@ def show_feature_importance(model, X_test):
 def is_regression_model(model):
     from sklearn.linear_model import LinearRegression
     return isinstance(model, LinearRegression)
+
 
 
 
