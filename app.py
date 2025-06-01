@@ -177,7 +177,7 @@ if uploaded_file:
                     insights = generate_insights(summary)
                     st.success(insights)
                 except Exception as e:
-                    st.error(f"❌ Error from Gemini API: {e}")
+                    st.error(f"❌ Error from Groq API: {e}")
 
     # Tab 6: Algorithm Info
     with tabs[5]:
