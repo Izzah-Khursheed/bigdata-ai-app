@@ -49,16 +49,31 @@ def preprocess_data(df):
     return df
 
 # ✅ Visualizations
-def visualize_data(df):
+def visualize_data(df, chart_type):
     num_df = df.select_dtypes(include='number')
 
-    # Pairplot with Matplotlib
-    fig = sns.pairplot(num_df)
-    st.pyplot(fig)
+    st.subheader(f"📊 {chart_type} Visualization")
 
-    # Plotly histograms
-    for col in num_df.columns:
-        fig = px.histogram(df, x=col)
+    selected_column = st.selectbox("Select a column for visualization", num_df.columns)
+
+    if chart_type == "Histogram":
+        fig = px.histogram(df, x=selected_column)
+        st.plotly_chart(fig)
+
+    elif chart_type == "Bar Chart":
+        bar_data = df[selected_column].value_counts().reset_index()
+        bar_data.columns = [selected_column, 'Count']
+        fig = px.bar(bar_data, x=selected_column, y='Count')
+        st.plotly_chart(fig)
+
+    elif chart_type == "Pie Chart":
+        pie_data = df[selected_column].value_counts().reset_index()
+        pie_data.columns = [selected_column, 'Count']
+        fig = px.pie(pie_data, names=selected_column, values='Count')
+        st.plotly_chart(fig)
+
+    elif chart_type == "Line Chart":
+        fig = px.line(df, y=selected_column)
         st.plotly_chart(fig)
 
 # ================== Train model ==================
