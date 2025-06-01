@@ -117,8 +117,15 @@ if uploaded_file:
     # Tab 3: Visualizations
     with tabs[2]:
         st.subheader("📈 Visualizations")
-        if st.button("Show Visualizations"):
-            visualize_data(df)
+
+        chart_type = st.selectbox(
+            "Select Chart Type",
+            ["Histogram", "Bar Chart", "Pie Chart", "Line Chart"]
+        )
+
+        if st.button("Show Visualization"):
+            visualize_data(df, chart_type)
+
 
     # Tab 4: ML Model Training & Evaluation
     with tabs[3]:
