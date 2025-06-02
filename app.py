@@ -135,15 +135,23 @@ if uploaded_file:
             "Model",
             list(available_models.keys())
         )
-        target = st.selectbox("Target Variable", df.columns)
+        # target = st.selectbox("Target Variable", df.columns)
+        targets = st.multiselect("🎯 Select Target Variable(s)", df.columns)
+
+        # Warnings and validations
+        if not targets:
+            st.warning("⚠️ Please select at least one target variable.")
+        elif len(targets) > 1 and model_name not in ["Random Forest", "Decision Tree", "Linear Regression"]:
+            st.warning(f"⚠️ Model '{model_name}' may not support multiple target variables. Please select one or use a supported model like Random Forest, Decision Tree, or Linear Regression.")
 
         use_cv = st.checkbox("Use Cross-Validation", value=False)
         show_feat_importance = st.checkbox("Show Feature Importance (if supported)", value=True)
 
-        if st.button("🚀 Train & Evaluate Model"):
+        # Only allow training if at least one target is selected
+        if targets and st.button("🚀 Train & Evaluate Model"):
             with st.spinner("Training your model..."):
                 try:
-                    model, X_test, y_test, y_pred = train_model(df, target, model_name, use_cv)
+                    model, X_test, y_test, y_pred = train_model(df, targets, model_name, use_cv)
                     evaluate_model(model, y_test, y_pred, model_name=model_name, X_test=X_test)
 
                     if show_feat_importance and hasattr(model, "feature_importances_"):
@@ -173,6 +181,8 @@ if uploaded_file:
 
                 except Exception as e:
                     st.error(f"❌ Error during training or evaluation: {e}")
+
+
 
     # Tab 5: AI-Powered Insights
     with tabs[4]:
