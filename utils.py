@@ -121,7 +121,7 @@ def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
         st.write(f"**Accuracy:** {acc:.2f}")
         st.write("**Confusion Matrix:**")
         st.write(cm)
-        st.text("**Classification Report:** \n" + report)
+        st.write("**Classification Report:** \n" + report)
 
 # ================== Feature importance ==================
 def show_feature_importance(model, X_test):
