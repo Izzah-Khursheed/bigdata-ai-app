@@ -13,7 +13,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cluster import KMeans
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier, plot_tree
-
+from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 from sklearn.preprocessing import LabelEncoder
 
 # ✅ Available models
@@ -76,23 +76,61 @@ def visualize_data(df, chart_type):
         fig = px.line(df, y=selected_column)
         st.plotly_chart(fig)
 
-# ================== Train model ==================
+ # ================== Train model ==================
+
 def train_model(df, target_col, model_name, use_cv=False):
     if model_name == "K-Means Clustering":
         X = df.drop(target_col, axis=1) if target_col in df.columns else df
         kmeans = KMeans(n_clusters=3, random_state=42)
         kmeans.fit(X)
         return kmeans, X, None, kmeans.labels_
-    else:
-        X = df.drop(target_col, axis=1)
-        y = df[target_col]
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        model_cls = available_models[model_name]
-        model = model_cls()
+    # Handle multiple target columns
+    is_multi_output = isinstance(target_col, list)
+
+    X = df.drop(columns=target_col)
+    y = df[target_col]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    model_cls = available_models[model_name]
+    base_model = model_cls()
+
+    if is_multi_output:
+        # ✅ Choose appropriate wrapper depending on model type
+        if is_regression_model(base_model):
+            model = MultiOutputRegressor(base_model)
+        else:
+            model = MultiOutputClassifier(base_model)
+
+        try:
+            model.fit(X_train, y_train)
+        except Exception as e:
+            st.error(f"❌ This model does not support multiple target columns.\n\n{e}")
+            return None, None, None, None
+    else:
+        model = base_model
         model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        return model, X_test, y_test, y_pred
+
+    y_pred = model.predict(X_test)
+    return model, X_test, y_test, y_pred
+    
+# def train_model(df, target_col, model_name, use_cv=False):
+#     if model_name == "K-Means Clustering":
+#         X = df.drop(target_col, axis=1) if target_col in df.columns else df
+#         kmeans = KMeans(n_clusters=3, random_state=42)
+#         kmeans.fit(X)
+#         return kmeans, X, None, kmeans.labels_
+#     else:
+#         X = df.drop(target_col, axis=1)
+#         y = df[target_col]
+#         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+#         model_cls = available_models[model_name]
+#         model = model_cls()
+#         model.fit(X_train, y_train)
+#         y_pred = model.predict(X_test)
+#         return model, X_test, y_test, y_pred
 
 # ================== Evaluate model ==================
 def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
@@ -137,36 +175,6 @@ def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
         st.markdown("### 📄 Classification Report")
         st.dataframe(report_df.style.background_gradient(cmap='Greens', axis=0))
 
-
-
-# def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
-#     st.subheader("📊 Model Evaluation")
-
-#     if model_name == "K-Means Clustering":
-#         st.write("K-Means clustering does not have a 'true label' evaluation in this setup.")
-#         if X_test is not None and X_test.shape[1] >= 2:
-#             plt.figure(figsize=(8,6))
-#             plt.scatter(X_test.iloc[:, 0], X_test.iloc[:, 1], c=y_pred, cmap='viridis')
-#             plt.title("K-Means Clustering Results")
-#             plt.xlabel(X_test.columns[0])
-#             plt.ylabel(X_test.columns[1])
-#             st.pyplot(plt)
-#         return
-
-    # if is_regression_model(model):
-    #     mse = mean_squared_error(y_true, y_pred)
-    #     r2 = r2_score(y_true, y_pred)
-    #     st.write(f"**Mean Squared Error:** {mse:.2f}")
-    #     st.write(f"**R² Score:** {r2:.2f}")
-    # else:
-    #     acc = accuracy_score(y_true, y_pred)
-    #     cm = confusion_matrix(y_true, y_pred)
-    #     report = classification_report(y_true, y_pred)
-    #     st.write(f"**Accuracy:** {acc:.2f}")
-    #     st.write("**Confusion Matrix:**")
-    #     st.write(cm)
-    #     st.text("**Classification Report:** \n" + report)
-
 # ================== Feature importance ==================
 def show_feature_importance(model, X_test):
     if hasattr(model, "feature_importances_"):
@@ -174,12 +182,22 @@ def show_feature_importance(model, X_test):
         importance_df = pd.DataFrame({
             'Feature': X_test.columns,
             'Importance': importance
-        }).sort_values(by="Importance", ascending=False)
+        }).sort_values(by="Importance", ascending=True)  # ascending for horizontal bars
 
         st.subheader("🔍 Feature Importance")
-        st.bar_chart(importance_df.set_index("Feature"))
+        fig = px.bar(
+            importance_df,
+            x="Importance",
+            y="Feature",
+            orientation='h',
+            title="Feature Importance",
+            color="Importance",
+            color_continuous_scale="Viridis"
+        )
+        st.plotly_chart(fig)
+
     else:
-        st.warning("This model does not support feature importance.")
+        st.warning("⚠️ This model does not support feature importance.")
 
 # ================== Helper functions ==================
 def is_regression_model(model):
