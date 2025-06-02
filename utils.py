@@ -77,7 +77,6 @@ def visualize_data(df, chart_type):
         st.plotly_chart(fig)
 
  # ================== Train model ==================
-
 def train_model(df, target_col, model_name, use_cv=False):
     if model_name == "K-Means Clustering":
         X = df.drop(target_col, axis=1) if target_col in df.columns else df
@@ -85,9 +84,7 @@ def train_model(df, target_col, model_name, use_cv=False):
         kmeans.fit(X)
         return kmeans, X, None, kmeans.labels_
 
-    # Handle multiple target columns
     is_multi_output = isinstance(target_col, list)
-
     X = df.drop(columns=target_col)
     y = df[target_col]
 
@@ -97,7 +94,15 @@ def train_model(df, target_col, model_name, use_cv=False):
     base_model = model_cls()
 
     if is_multi_output:
-        # ✅ Choose appropriate wrapper depending on model type
+        # Allowed multi-output classifiers
+        multioutput_supported_models = [
+            "Random Forest", "Decision Tree", "Gradient Boosting"
+        ]
+        # If model is not in allowed list, throw error early
+        if model_name not in multioutput_supported_models:
+            st.error(f"❌ Model '{model_name}' does not support multiple target variables with multi-class outputs.")
+            return None, None, None, None
+        
         if is_regression_model(base_model):
             model = MultiOutputRegressor(base_model)
         else:
@@ -106,7 +111,7 @@ def train_model(df, target_col, model_name, use_cv=False):
         try:
             model.fit(X_train, y_train)
         except Exception as e:
-            st.error(f"❌ This model does not support multiple target columns.\n\n{e}")
+            st.error(f"❌ Training failed: {e}")
             return None, None, None, None
     else:
         model = base_model
@@ -114,6 +119,7 @@ def train_model(df, target_col, model_name, use_cv=False):
 
     y_pred = model.predict(X_test)
     return model, X_test, y_test, y_pred
+
     
 # def train_model(df, target_col, model_name, use_cv=False):
 #     if model_name == "K-Means Clustering":
