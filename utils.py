@@ -96,32 +96,76 @@ def train_model(df, target_col, model_name, use_cv=False):
 
 # ================== Evaluate model ==================
 def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
-    st.subheader("📊 Model Evaluation")
+    st.subheader("📊 Model Evaluation Summary")
 
     if model_name == "K-Means Clustering":
-        st.write("K-Means clustering does not have a 'true label' evaluation in this setup.")
+        st.warning("🔹 K-Means clustering does not have 'true labels' for evaluation.")
         if X_test is not None and X_test.shape[1] >= 2:
-            plt.figure(figsize=(8,6))
-            plt.scatter(X_test.iloc[:, 0], X_test.iloc[:, 1], c=y_pred, cmap='viridis')
-            plt.title("K-Means Clustering Results")
-            plt.xlabel(X_test.columns[0])
-            plt.ylabel(X_test.columns[1])
-            st.pyplot(plt)
+            fig, ax = plt.subplots(figsize=(8, 6))
+            scatter = ax.scatter(X_test.iloc[:, 0], X_test.iloc[:, 1], c=y_pred, cmap='viridis')
+            ax.set_title("🌀 K-Means Clustering Results", fontsize=14)
+            ax.set_xlabel(X_test.columns[0])
+            ax.set_ylabel(X_test.columns[1])
+            st.pyplot(fig)
         return
 
     if is_regression_model(model):
         mse = mean_squared_error(y_true, y_pred)
         r2 = r2_score(y_true, y_pred)
-        st.write(f"**Mean Squared Error:** {mse:.2f}")
-        st.write(f"**R² Score:** {r2:.2f}")
+
+        st.markdown("### 📈 Regression Metrics")
+        st.metric(label="Mean Squared Error", value=f"{mse:.2f}")
+        st.metric(label="R² Score", value=f"{r2:.2f}")
+
     else:
         acc = accuracy_score(y_true, y_pred)
         cm = confusion_matrix(y_true, y_pred)
-        report = classification_report(y_true, y_pred)
-        st.write(f"**Accuracy:** {acc:.2f}")
-        st.write("**Confusion Matrix:**")
-        st.write(cm)
-        st.write("**Classification Report:** \n" + report)
+        report_dict = classification_report(y_true, y_pred, output_dict=True)
+        report_df = pd.DataFrame(report_dict).transpose()
+
+        st.markdown("### ✅ Classification Metrics")
+        st.metric(label="Accuracy", value=f"{acc:.2%}")
+
+        st.markdown("### 🔍 Confusion Matrix")
+        fig, ax = plt.subplots()
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", cbar=False, ax=ax)
+        ax.set_xlabel("Predicted Labels")
+        ax.set_ylabel("True Labels")
+        ax.set_title("Confusion Matrix", fontsize=14)
+        st.pyplot(fig)
+
+        st.markdown("### 📄 Classification Report")
+        st.dataframe(report_df.style.background_gradient(cmap='Greens', axis=0))
+
+
+
+# def evaluate_model(model, y_true, y_pred, model_name=None, X_test=None):
+#     st.subheader("📊 Model Evaluation")
+
+#     if model_name == "K-Means Clustering":
+#         st.write("K-Means clustering does not have a 'true label' evaluation in this setup.")
+#         if X_test is not None and X_test.shape[1] >= 2:
+#             plt.figure(figsize=(8,6))
+#             plt.scatter(X_test.iloc[:, 0], X_test.iloc[:, 1], c=y_pred, cmap='viridis')
+#             plt.title("K-Means Clustering Results")
+#             plt.xlabel(X_test.columns[0])
+#             plt.ylabel(X_test.columns[1])
+#             st.pyplot(plt)
+#         return
+
+    # if is_regression_model(model):
+    #     mse = mean_squared_error(y_true, y_pred)
+    #     r2 = r2_score(y_true, y_pred)
+    #     st.write(f"**Mean Squared Error:** {mse:.2f}")
+    #     st.write(f"**R² Score:** {r2:.2f}")
+    # else:
+    #     acc = accuracy_score(y_true, y_pred)
+    #     cm = confusion_matrix(y_true, y_pred)
+    #     report = classification_report(y_true, y_pred)
+    #     st.write(f"**Accuracy:** {acc:.2f}")
+    #     st.write("**Confusion Matrix:**")
+    #     st.write(cm)
+    #     st.text("**Classification Report:** \n" + report)
 
 # ================== Feature importance ==================
 def show_feature_importance(model, X_test):
